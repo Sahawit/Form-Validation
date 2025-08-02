@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Health Survey</title>
+    <style>
+        body {
+            background-color: #ebeaea;
+            font-family: sans-serif;
+            margin: 40px;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #000000;
+            margin-bottom: 30px;
+            text-shadow: #ffffff 1px 1px 2px;
+        }
+
+        h3 {
+            text-align: center;
+            color: #000000;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto 40px auto;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #067d06;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>ฟอร์มแบบสอบถามสุขภาพ </h2>
+        <h3>(Health Survey)</h3>
+        <form id="surveyForm">
+            <label>อายุ: <input type="number" id="age" required min="15" max="60"></label><br><br>
+            <label>เพศ:
+                <input type="radio" name="gender" value="ชาย" required> ชาย
+                <input type="radio" name="gender" value="หญิง"> หญิง
+            </label><br><br>
+            <label>น้ำหนัก (กก.): <input type="number" id="weight" required step="0.1"></label><br><br>
+            <label>ส่วนสูง (ซม.): <input type="number" id="height" required step="0.1"></label><br><br>
+            <label>
+                <input type="checkbox" id="hasDisease"> มีโรคประจำตัว
+            </label><br><br>
+            <div id="diseaseDetailDiv" style="display:none;">
+                <label>โปรดระบุโรคประจำตัว: </label>
+                <textarea id="diseaseDetail"></textarea><br></br>
+            </div>
+            <button type="submit">ส่งแบบสอบถาม</button>
+            <div class="error" id="errorMsg"></div>
+        </form>
+
+        <div class="modal" id="resultModal">
+            <div class="modal-content" id="modalContent"></div>
+        </div>
+
+        <script>
+            const form = document.getElementById('surveyForm');
+            const errorMsg = document.getElementById('errorMsg');
+            const modal = document.getElementById('resultModal');
+            const modalContent = document.getElementById('modalContent');
+            const hasDisease = document.getElementById('hasDisease');
+            const diseaseDetailDiv = document.getElementById('diseaseDetailDiv');
+            const diseaseDetail = document.getElementById('diseaseDetail');
+
+            hasDisease.addEventListener('change', function () {
+                diseaseDetailDiv.style.display = hasDisease.checked ? 'block' : 'none';
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                errorMsg.textContent = '';
+
+                const age = parseInt(document.getElementById('age').value, 10);
+                const gender = document.querySelector('input[name="gender"]:checked');
+                const weight = parseFloat(document.getElementById('weight').value);
+                const height = parseFloat(document.getElementById('height').value);
+
+                // Validation
+                if (isNaN(age) || age < 15 || age > 60) {
+                    errorMsg.textContent = 'อายุต้องอยู่ระหว่าง 15-60 ปี';
+                    return;
+                }
+                if (!gender) {
+                    errorMsg.textContent = 'กรุณาเลือกเพศ';
+                    return;
+                }
+                if (isNaN(weight) || weight <= 0) {
+                    errorMsg.textContent = 'กรุณากรอกน้ำหนักให้ถูกต้อง';
+                    return;
+                }
+                if (isNaN(height) || height <= 0) {
+                    errorMsg.textContent = 'กรุณากรอกส่วนสูงให้ถูกต้อง';
+                    return;
+                }
+                if (hasDisease.checked && diseaseDetail.value.trim() === '') {
+                    errorMsg.textContent = 'กรุณาระบุโรคประจำตัว';
+                    return;
+                }
+
+                // BMI Calculation
+                const bmi = weight / Math.pow(height / 100, 2);
+                let group = '';
+                if (bmi < 18.5) group = 'น้ำหนักน้อย';
+                else if (bmi < 25) group = 'ปกติ';
+                else if (bmi < 30) group = 'น้ำหนักเกิน';
+                else group = 'อ้วน';
+
+                // Show Modal
+                modalContent.innerHTML = `
+                <div>ผลการประเมิน BMI: ${bmi.toFixed(2)}</div>
+                <div>อยู่ในกลุ่ม: <b>${group}</b></div>
+            `;
+                modal.style.display = 'flex';
+            });
+
+            // Close modal on click
+            modal.addEventListener('click', function () {
+                modal.style.display = 'none';
+                form.reset();
+                diseaseDetailDiv.style.display = 'none';
+            });
+        </script>
+</body>
+
+</html>

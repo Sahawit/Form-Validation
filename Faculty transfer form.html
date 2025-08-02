@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>คำร้องขอโอนย้ายสาขาวิชาต่างคณะ</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+            margin: 0;
+            padding: 20px;
+            background-color: #ebeaea;
+        }
+        h2 {
+            text-align: center;
+            color: #000000;
+            margin-bottom: 30px;
+            text-shadow: #ffffff 1px 1px 2px;
+        }
+        form {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto 40px auto;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #000000;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #067d06;
+        }
+        .text_color {
+            color: #5cb85c;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>ฟอร์มคำร้องขอโอนย้ายสาขาวิชาต่างคณะ</h2>
+    <form id="transferForm">
+        <label>ชื่อ-นามสกุล: <input type="text" id="fullname" required></label><br><br>
+        <label>รหัสนักศึกษา: <input type="text" id="studentId" required maxlength="10"></label><br><br>
+        <label>คณะเดิม:
+            <input type="text" id="oldFaculty" required>
+        </label><br><br>
+        <label>สาขาวิชาเดิม:
+            <input type="text" id="oldMajor" required>
+        </label><br><br>
+        <label>คณะใหม่:
+            <input type="text" id="newFaculty" required>
+        </label><br><br>
+        <label>สาขาวิชาใหม่:
+            <input type="text" id="newMajor" required>
+        </label><br><br>
+        <label>เหตุผลในการขอโอนย้าย:<br>
+            <textarea id="reason" required></textarea>
+        </label><br><br>
+        <button type="submit">ส่งคำร้อง</button>
+        <div class="error" id="errorMsg"></div>
+    </form>
+
+    <div class="modal text_color" id="resultModal">
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('transferForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const modal = document.getElementById('resultModal');
+        const modalContent = document.getElementById('modalContent');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            errorMsg.textContent = '';
+
+            const fullname = document.getElementById('fullname').value.trim();
+            const studentId = document.getElementById('studentId').value.trim();
+            const oldFaculty = document.getElementById('oldFaculty').value.trim();
+            const oldMajor = document.getElementById('oldMajor').value.trim();
+            const newFaculty = document.getElementById('newFaculty').value.trim();
+            const newMajor = document.getElementById('newMajor').value.trim();
+            const reason = document.getElementById('reason').value.trim();
+
+            // Validation
+            if (fullname.split(' ').length > 2) {
+                errorMsg.textContent = 'กรุณากรอกชื่อ-นามสกุลอย่างน้อย 2 คำ';
+                return;
+            }
+            if (!/^\d{10}$/.test(studentId)) {
+                errorMsg.textContent = 'รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก';
+                return;
+            }
+            if (!oldFaculty || !oldMajor || !newFaculty || !newMajor) {
+                errorMsg.textContent = 'กรุณากรอกข้อมูลคณะและสาขาวิชาให้ครบถ้วน';
+                return;
+            }
+            if (reason.length < 10) {
+                errorMsg.textContent = 'กรุณากรอกเหตุผลอย่างน้อย 10 ตัวอักษร';
+                return;
+            }
+
+            // Success Modal
+            modalContent.innerHTML = `
+                <div>ส่งคำร้องสำเร็จ</div>
+                <div>ชื่อ: ${fullname}</div>
+                <div>รหัสนักศึกษา: ${studentId}</div>
+                <div>จากคณะ: ${oldFaculty} สาขา: ${oldMajor}</div>
+                <div>ไปคณะ: ${newFaculty} สาขา: ${newMajor}</div>
+            `;
+            modal.style.display = 'flex';
+        });
+
+        // Close modal on click
+        modal.addEventListener('click', function () {
+            modal.style.display = 'none';
+            form.reset();
+        });
+    </script>
+</body>
+
+</html>
